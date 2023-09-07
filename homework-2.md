@@ -140,7 +140,7 @@ a_salugin@postgres:~$ sudo chown -R postgres:postgres /backup
 ```
 **перенесем данные из стандартного каталога в новый /pgdata**
 
-``a_salugin@postgres:~$ sudo -u postgsre mv /var/lib/postgresql/15 /pgdata``
+`a_salugin@postgres:~$ sudo -u postgsre mv /var/lib/postgresql/15 /pgdata`
 
 **Запустим постгрес**
 ```bash
@@ -223,6 +223,21 @@ data_directory = '/pgdata/15/main'
 
 **Проверим на месте ли данные**
 
-``a_salugin@postgres2:~$ sudo -u postgres psql``
+```bash
+a_salugin@postgres2:~$ sudo -u postgres psql
+postgres=# \dp
+                            Access privileges
+ Schema | Name | Type  | Access privileges | Column privileges | Policies
+--------+------+-------+-------------------+-------------------+----------
+ public | test | table |                   |                   |
+(1 row)
+
+postgres=# select * from test
+postgres-# ;
+ c1
+----
+ 1
+(1 row)
+```
 
 **Постгрес успешно работает с данными на внешнем диске**
