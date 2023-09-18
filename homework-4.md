@@ -65,7 +65,7 @@ transparent_hugepages=never
 
 Применим профиль postgres на обоих машинах
 
-tuned-adm profile postgres
+`tuned-adm profile postgres`
 
 Проверим производительность БД после внесенных изменений
 
