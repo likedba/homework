@@ -2,7 +2,8 @@
 # Настройка и нагрузочное тестирование БД
 
 **Тестируемые машины:**
-host1
+| host | CPU | RAM | Disk |
+host1 \
 host2
 
 **Конфигурация host1:**
@@ -11,11 +12,11 @@ host2
 SSD массив
 
 **Конфигурация host2:**
-12 ядер
+12 ядер /
 63 Гб ОЗУ
 SSD массив
 
-**Нагрузка:**
+**Нагрузка:** \
 pgbench -U pgbench -c 80 -T 600 -P 60 pgbench
 
 ## Тест №1
@@ -38,6 +39,7 @@ pgbench -U pgbench -c 80 -T 600 -P 60 pgbench
 
 Создадим профиль "postgres" утилиты tuned:
 
+```bash
 [main]
 summary=Tuned profile for  PostgreSQL Instances
 
@@ -60,6 +62,7 @@ net.ipv4.tcp_timestamps=0
 
 [vm]
 transparent_hugepages=never
+```
 
 Применим профиль postgres на обоих машинах
 
@@ -81,7 +84,7 @@ tuned-adm profile postgres
 ## Тест №3
 **Измерим производительность БД с измененными настройками ОС и БД**
 
-**Отредактированные настройки postgresql**
+**Отредактируем настройки postgresql на обоих хостах:**
 | host1: | host2: | info |
 | :------ | :------ | :------ |
 | data_directory = '/pgdata/' | data_directory = '/pgdata/' |  |
@@ -109,6 +112,7 @@ tuned-adm profile postgres
 | cpu_tuple_cost = 0.03 | cpu_tuple_cost = 0.03 |  |
 | *effective_cache_size = 23GB* | *effective_cache_size = 40GB* |  |
 | shared_preload_libraries = 'pg_stat_statements,pg_prewarm' | shared_preload_libraries = 'pg_stat_statements,pg_prewarm' |  |
+
 
 | host1: | host2: |
 | :------: | :------: |
