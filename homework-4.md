@@ -214,7 +214,7 @@ lsblk -d -o name,rota
 NAME ROTA
 sda     0
 sdb     0
-sr0      1
+sr0     1
 ```
 | host1: | host2: |
 | :------: | :------: |
