@@ -171,7 +171,7 @@ vm.nr_hugepages=8522
 Включим новый планировщик: \
 `echo "none" | sudo tee /sys/block/sda/queue/scheduler`
 
-Сохранение настроек при перезапуске ОС: \
+Сохранение настроек при перезапуске ОС: 
 ```bash
 /etc/default/grub
 ----------------------
@@ -189,7 +189,7 @@ cat /sys/block/sda/queue/scheduler
 [none] mq-deadline kyber bfq
 ```
 
-**Настроим значение rota на обоих машинах:** \
+**Настроим значение rota на обоих машинах:** 
 
 1 - есть вращающаяся часть (HDD) \
 0 - нет вращающейся части (SSD) \
@@ -203,7 +203,7 @@ sdb     1
 sr0     1
 ```
 
-Изменим тип дисков: \
+Изменим тип дисков: 
 
 `echo 0 > /sys/block/sda/queue/rotational` \
 `echo 0 > /sys/block/sdb/queue/rotational`
