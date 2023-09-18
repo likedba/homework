@@ -18,14 +18,14 @@ pgbench -U pgbench -c 80 -T 600 -P 60 pgbench
 # Тест №1
 Измерим производительность БД со стандартными настройками ОС и БД
 
-host1:                                                                                            host2:
-Стандартные настройки postgresql                                                                  Стандартные настройки postgresql
-Профиль ОС balanced                                                                               Профиль ОС balanced
+host1:                                                                                          host2:
+Стандартные настройки postgresql                                                                Стандартные настройки postgresql
+Профиль ОС balanced                                                                             Профиль ОС balanced
 
-TPS:                                                                                              TPS:
-    1. 5263                                                                                       13076
-    2. 5286                                                                                       12913
-    3. 5302                                                                                       12971
+TPS:                                                                                            TPS:
+    1. 5263                                                                                     13076
+    2. 5286                                                                                     12913
+    3. 5302                                                                                     12971
 **Avarage tps=  5284                                                                                Avarage tps= 12987**
 
 # Тест №2
