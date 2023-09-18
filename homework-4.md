@@ -84,31 +84,31 @@ tuned-adm profile postgres
 **Отредактированные настройки postgresql**
 | host1: | host2: | info |
 | :------ | :------ | :------ |
-| data_directory = '/pgdata/'|  |  |
-| hba_file = '/pgdata/pg_hba.conf' |  |  |
-| ident_file = '/pgdata/pg_ident.conf' |  |  |
-| listen_addresses = '*' |  |  |
-| max_connections = 1400 |  | В этом проекте пока использование пулера не представляется возможным |
-| shared_buffers = 8192MB |  | shared_buffers = 16384MB |
-| work_mem = 32MB |  |  |
-| maintenance_work_mem = 420MB | maintenance_work_mem = 520MB |  |
-| effective_io_concurrency = 200 |  |  |
-| maintenance_io_concurrency = 200 |  |  |
-| max_worker_processes = 5 | max_worker_processes = 12 |  |
-| max_parallel_workers_per_gather = 3 | max_parallel_workers_per_gather = 6 |  |
-| max_parallel_maintenance_workers = 3 | max_parallel_maintenance_workers = 6 |  |
-| max_parallel_workers = 5 | max_parallel_workers = 12 |  |
-| wal_compression = on |  | поскольку узким местом большинства серверов является io а не cpu |
-| wal_init_zero = off |  | более эффективные операции с вал в файловых системах COW |
-| wal_recycle = off |  | на виртуальных машинах быстрее создание новых вал |
-| wal_buffers = 64MB |  |  |
-| max_wal_size = 5GB |  |  |
-| min_wal_size = 2500MB |  |  |
-| seq_page_cost = 1.0 |  |  |
-| random_page_cost = 1.25 |  |  |
-| cpu_tuple_cost = 0.03 |  |  |
-| effective_cache_size = 23GB   |  effective_cache_size = 40GB |  |
-| shared_preload_libraries = 'pg_stat_statements,pg_prewarm' |  |  |
+| data_directory = '/pgdata/' | data_directory = '/pgdata/' |  |
+| hba_file = '/pgdata/pg_hba.conf' | hba_file = '/pgdata/pg_hba.conf' |  |
+| ident_file = '/pgdata/pg_ident.conf' | ident_file = '/pgdata/pg_ident.conf' |  |
+| listen_addresses = '*' | listen_addresses = '*' |  |
+| max_connections = 1400 | max_connections = 1400 | В этом проекте пока использование пулера не представляется возможным |
+| *shared_buffers = 8192MB* | *shared_buffers = 16384MB* |  |
+| work_mem = 32MB | work_mem = 32MB |  |
+| *maintenance_work_mem = 420MB* | *maintenance_work_mem = 520MB* |  |
+| effective_io_concurrency = 200 | effective_io_concurrency = 200 |  |
+| maintenance_io_concurrency = 200 | maintenance_io_concurrency = 200 |  |
+| *max_worker_processes = 5* | *max_worker_processes = 12* |  |
+| *max_parallel_workers_per_gather = 3* | *max_parallel_workers_per_gather = 6* |  |
+| *max_parallel_maintenance_workers = 3* | *max_parallel_maintenance_workers = 6* |  |
+| *max_parallel_workers = 5* | *max_parallel_workers = 12* |  |
+| wal_compression = on | wal_compression = on | поскольку узким местом большинства серверов является io а не cpu |
+| wal_init_zero = off | wal_init_zero = off | более эффективные операции с вал в файловых системах COW |
+| wal_recycle = off | wal_recycle = off | на виртуальных машинах быстрее создание новых вал |
+| wal_buffers = 64MB | wal_buffers = 64MB |  |
+| max_wal_size = 5GB | max_wal_size = 5GB |  |
+| min_wal_size = 2500MB | min_wal_size = 2500MB |  |
+| seq_page_cost = 1.0 | seq_page_cost = 1.0 |  |
+| random_page_cost = 1.25 | random_page_cost = 1.25 |  |
+| cpu_tuple_cost = 0.03 | cpu_tuple_cost = 0.03 |  |
+| *effective_cache_size = 23GB* | *effective_cache_size = 40GB* |  |
+| shared_preload_libraries = 'pg_stat_statements,pg_prewarm' | shared_preload_libraries = 'pg_stat_statements,pg_prewarm' |  |
 
 | host1: | host2: |
 | :------: | :------: |
