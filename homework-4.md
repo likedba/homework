@@ -163,15 +163,15 @@ vm.nr_hugepages=8522
 
 **Настроим scheduler на обоих машинах:**
 
-Вывод текущего планировщика:
+Вывод текущего планировщика: \
 
-`cat /sys/block/sda/queue/scheduler`
+`cat /sys/block/sda/queue/scheduler` \
 `none mq-deadline kyber [bfq]`
 
-Включим новый планировщик:
+Включим новый планировщик: \
 `echo "none" | sudo tee /sys/block/sda/queue/scheduler`
 
-Сохранение настроек при перезапуске ОС:
+Сохранение настроек при перезапуске ОС: \
 ```bash
 /etc/default/grub
 ----------------------
@@ -180,7 +180,7 @@ GRUB_CMDLINE_LINUX="elevator=none"
 …
 ----------------------
 ```
-Применение изменений в загрузчике:
+Применение изменений в загрузчике: \
 `update-grub2`
 
 проверим  планировщик:
@@ -189,10 +189,10 @@ cat /sys/block/sda/queue/scheduler
 [none] mq-deadline kyber bfq
 ```
 
-**Настроим значение rota на обоих машинах:**
+**Настроим значение rota на обоих машинах:** \
 
-1 - есть вращающаяся часть (HDD)
-0 - нет вращающейся части (SSD)
+1 - есть вращающаяся часть (HDD) \
+0 - нет вращающейся части (SSD) \
 
 Выведем текущие параметры rotate для дисков в системе :
 ```bash
@@ -203,9 +203,9 @@ sdb     1
 sr0     1
 ```
 
-Изменим тип дисков:
+Изменим тип дисков: \
 
-`echo 0 > /sys/block/sda/queue/rotational`
+`echo 0 > /sys/block/sda/queue/rotational` \
 `echo 0 > /sys/block/sdb/queue/rotational`
 
 Проверим изменения
