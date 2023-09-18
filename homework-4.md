@@ -1,5 +1,5 @@
 
-[TOC]
+# Настройка и нагрузочное тестирование БД
 
 **Тестируемые машины:**
 host1
@@ -18,7 +18,7 @@ SSD массив
 **Нагрузка:**
 pgbench -U pgbench -c 80 -T 600 -P 60 pgbench
 
-# Тест №1
+## Тест №1
 Измерим производительность БД со стандартными настройками ОС и БД
 
 | host1: | host2: |
@@ -28,16 +28,13 @@ pgbench -U pgbench -c 80 -T 600 -P 60 pgbench
 | | |
 | TPS: | TPS: |
 | 5263 | 13076 |
-| 5286 | 12913|
-| 5302 | 12971|
+| 5286 | 12913 |
+| 5302 | 12971 |
 | **Avarage tps=  5284** | **Avarage tps= 12987** |
 
-# Тест №2
+## Тест №2
 **Измерим производительность БД с измененными настройками ОС и стандартными настройками БД**
 
-host1:                                                                                            host2:
-Стандартные настройки postgresql                                                                  Стандартные настройки postgresql
-Профиль ОС postgres                                                                               Профиль ОС postgres
 
 Создадим профиль "postgres" утилиты tuned:
 
@@ -70,72 +67,96 @@ tuned-adm profile postgres
 
 Проверим производительность БД после внесенных изменений
 
-TPS:                                                                                              TPS:
-    1. 5348                                                                                        12727
-    2. 5300                                                                                        12847
-    3. 5324                                                                                        12549
-**Avarage tps=  5324                                                                                Avarage tps= 12708**
+| host1: | host2: |
+| :------: | :------: |
+| Стандартные настройки postgresql | Стандартные настройки postgresql |
+| Профиль ОС postgres | Профиль ОС postgres |
+| | |
+| TPS: | TPS: |
+| 5348 | 12727 |
+| 5300 | 12847 |
+| 5324 | 12549 |
+| **Avarage tps= 5324** | **Avarage tps= 12708** |
 
-# Тест №3
+## Тест №3
 **Измерим производительность БД с измененными настройками ОС и БД**
 
-host1:                                                                                            host2:
-Отредактированные настройки postgresql                                                            Отредактированные настройки postgresql
-Профиль ОС postgres                                                                               Профиль ОС postgres
+**Отредактированные настройки postgresql**
+| host1: | host2: |
+| :------ | :------ | :------ |
+| data_directory = '/pgdata/'|  |  |
+| hba_file = '/pgdata/pg_hba.conf' |  |  |
+| ident_file = '/pgdata/pg_ident.conf' |  |  |
+| listen_addresses = '*' |  |  |
+| max_connections = 1400 |  | В этом проекте пока использование пулера не представляется возможным |
+| shared_buffers = 8192MB |  | shared_buffers = 16384MB |
+| work_mem = 32MB |  |  |
+| maintenance_work_mem = 420MB | maintenance_work_mem = 520MB |  |
+| effective_io_concurrency = 200 |  |  |
+| maintenance_io_concurrency = 200 |  |  |
+| max_worker_processes = 5 | max_worker_processes = 12 |  |
+| max_parallel_workers_per_gather = 3 | max_parallel_workers_per_gather = 6 |  |
+| max_parallel_maintenance_workers = 3 | max_parallel_maintenance_workers = 6 |  |
+| max_parallel_workers = 5 | max_parallel_workers = 12 |  |
+| wal_compression = on |  | поскольку узким местом большинства серверов является io а не cpu |
+| wal_init_zero = off |  | более эффективные операции с вал в файловых системах COW |
+| wal_recycle = off |  | на виртуальных машинах быстрее создание новых вал |
+| wal_buffers = 64MB |  |  |
+| max_wal_size = 5GB |  |  |
+| min_wal_size = 2500MB |  |  |
+| seq_page_cost = 1.0 |  |  |
+| random_page_cost = 1.25 |  |  |
+| cpu_tuple_cost = 0.03 |  |  |
+| effective_cache_size = 23GB   |  effective_cache_size = 40GB |  |
+| shared_preload_libraries = 'pg_stat_statements,pg_prewarm' |  |  |
 
-postgresql.conf       (для host2 отмечены только отличающиесянастройки)
+| host1: | host2: |
+| :------: | :------: |
+| Отредактированные настройки postgresql | Отредактированные настройки postgresql |
+| Профиль ОС postgres | Профиль ОС postgres |
+| | |
+| TPS: | TPS: |
+| 5223 | 13996 |
+| 5314 | 14103 |
+| 5253 | 14007 |
+| **Avarage tps= 5263** | **Avarage tps= 14035** |
 
-data_directory = '/pgdata/'
-hba_file = '/pgdata/pg_hba.conf'
-ident_file = '/pgdata/pg_ident.conf'
-listen_addresses = '*'
-max_connections = 1400                    # В этом проекте пока использование пулера не представляется возможным
-shared_buffers = 8192MB                                                                           shared_buffers = 16384MB
-work_mem = 32MB
-maintenance_work_mem = 420MB                                                                      maintenance_work_mem = 520MB
-effective_io_concurrency = 200
-maintenance_io_concurrency = 200
-max_worker_processes = 5                                                                          max_worker_processes = 12
-max_parallel_workers_per_gather = 3                                                               max_parallel_workers_per_gather = 6
-max_parallel_maintenance_workers = 3                                                              max_parallel_maintenance_workers = 6
-max_parallel_workers = 5                                                                          max_parallel_workers = 12
-wal_compression = on                      # поскольку узким местом большинства серверов является io а не cpu
-wal_init_zero = off                       # более эффективные операции с вал в файловых системах COW
-wal_recycle = off                         # на виртуальных машинах быстрее создание новых вал
-wal_buffers = 64MB
-max_wal_size = 5GB
-min_wal_size = 2500MB
-seq_page_cost = 1.0
-random_page_cost = 1.25
-cpu_tuple_cost = 0.03
-effective_cache_size = 23GB                                                                        effective_cache_size = 40GB
-shared_preload_libraries = 'pg_stat_statements,pg_prewarm'
+## Тест №4
 
-TPS:                                                                                               TPS:
-    1. 5223                                                                                         13996
-    2. 5314                                                                                         14103
-    3. 5253                                                                                         14007
-**Avarage tps=  5263                                                                                 Avarage tps= 14035**
-
-# Тест №4
 **Измерим производительность БД с измененными настройками ОС и БД + настроенные huge pages, scheduler и параметром rota для диска с pgdata**
 
 **Настроим huge pages:**
 
-host1:                                                                                              host2:
+host1:
+```bash
+psql
+postgres=# show shared_memory_size_in_huge_pages ;
+shared_memory_size_in_huge_pages
+----------------------------------
+ 4225
 
-`psql`                                                                                                psql
-`postgres=# show shared_memory_size_in_huge_pages ;`                                                  postgres=# show `shared_memory_size_in_huge_pages ;`
-`shared_memory_size_in_huge_pages`
-`----------------------------------`                                                                  `----------------------------------`
- `4225`                                                                                                `8442`
+postgres=# exit
+nano /etc/tuned/postgres/tuned.conf
 
-`postgres=# exit`                                                                                     `postgres=# exit`
-`nano /etc/tuned/postgres/tuned.conf`                                                                 `nano /etc/tuned/postgres/tuned.conf`
+#Добавим в раздел sysctl значение hp с запасом в 1%
 
-Добавим в раздел sysctl значение hp с запасом в 1%
+vm.nr_hugepages=4265
+```
 
-`vm.nr_hugepages=4265`                                                                                `vm.nr_hugepages=8522`
+host2:
+```bash
+psql
+postgres=# show shared_memory_size_in_huge_pages
+shared_memory_size_in_huge_pages 
+----------------------------------
+ 8442
+postgres=# exit
+nano /etc/tuned/postgres/tuned.conf
+
+#Добавим в раздел sysctl значение hp с запасом в 1%
+
+vm.nr_hugepages=8522
+```
 
 **Настроим scheduler на обоих машинах:**
 
@@ -157,7 +178,7 @@ GRUB_CMDLINE_LINUX="elevator=none"
 ----------------------
 ```
 Применение изменений в загрузчике:
-update-grub2
+`update-grub2`
 
 проверим  планировщик:
 ```bash
