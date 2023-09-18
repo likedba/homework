@@ -112,6 +112,7 @@ transparent_hugepages=never
 | *effective_cache_size = 23GB* | *effective_cache_size = 40GB* |  |
 | shared_preload_libraries = 'pg_stat_statements,pg_prewarm' | shared_preload_libraries = 'pg_stat_statements,pg_prewarm' |  |
 
+Измерим производительность после изменения и применения настроек:
 
 | host1: | host2: |
 | :------: | :------: |
