@@ -73,14 +73,13 @@ chmod 644 /etc/odyssey/odyssey.conf
 cp scripts/systemd/odyssey.service /usr/lib/systemd/systemsystemctl daemon-reload
 ```
 
-В случае, если odyssey работает в кластере patroni, то для корректной работы необходимо отредактировать юнит файл так, чтобы odyssey всегда запускался с запуском кластера.
+В случае, если odyssey работает всовместно с кластером patroni, то для корректной работы необходимо отредактировать юнит файлы так, для правильного запуска сервиса.
 
-Настройка запуска сервиса:
-Для корректной работы Odyssey совместно с Patroni необходимо настроить запуск сервиса.
+<details>
+
+  <summary>systemctl edit odyssey.service</summary>
 
 ```bash
-systemctl edit odyssey.service
-----------------------------
 ### Editing /etc/systemd/system/odyssey.service.d/override.conf
 ### Anything between here and the comment below will become the new contents of the file
 [Unit]
@@ -102,12 +101,15 @@ PartOf=patroni.service
 #
 # [Install]
 # WantedBy=multi-user.target
----------------------------------
 ```
 
+</details>
+
+<details>
+
+  <summary>patroni.service</summary>
+
 ```bash
-nano /etc/systemd/system/patroni.service
-----------------------------------
 [Unit]
 Description=HA Postgresql Cluster
 After=syslog.target network.target
@@ -123,16 +125,19 @@ TimeoutSec=30
 Restart=no
 [Install]
 WantedBy=multi-user.target
--------------------------------------
-systemctl daemon-reload
 ```
+
+</details>
+
+systemctl daemon-reload
+
 ## Настройка Odyssey
 ### Общие настройки:
 
 <details>
 
   <summary>пример конфигурационного файла odyssey.conf</summary>
-  
+
 ```yaml
 daemonize no
 pid_file "/var/run/odyssey/odyssey.pid"
@@ -170,7 +175,7 @@ listen {
         host "*"
         port 6432
         backlog 128
-    compression no
+        compression no
 }
 storage "postgres_server" {
         type "remote"
@@ -183,7 +188,7 @@ database "postgres" {
                 storage "postgres_server"
                 pool "session"
                 pool_size 10
-        client_max 100
+                client_max 100
                 pool_discard no
                 pool_cancel yes
                 pool_rollback yes
@@ -231,7 +236,7 @@ database "pgbench" {
                 pool_rollback yes
                 client_fwd_error yes
                 application_name_add_host yes
-        log_query no
+                log_query no
         }
 }
 storage "local" {
@@ -253,21 +258,39 @@ client_fwd_error on       database "test" doesn't exist
 
 
 ### Настройка маршрутов:
-
-Сторэджи бывают только двух типов
-1. remote - бд постгреса
-2. local - для доступа к консоли odyssey,  откуда также можно получить статистику по работе пулера
-
+#### Storage
+Сторэджи, для которых настраиваются правила подключения бывают двух типов:
+1. remote
+Здесь указываются данные для подключения к инстансу PostgreSQL. В конфиге может быть указано несколько внешних хранилищ.
+```yaml
 Storage "postgres server" {
     type "remote"
     host "127.0.0.1"
     port "5432"
     tls "disable"
 }
+```
 
+2. local
+
+Данный тип хранилища необходим для описания правил подключения к консоли Odyssey. В нем существует только одна БД "console".
+
+```yaml
+storage "local" {
+        type "local"
+}
+database "console" {
+        user default {
+                authentication "none"
+                pool "session"
+                storage "local"
+        }
+}
+```
 
 Настройка пулов осуществляется на основе правил - определяется бд и пользователь, который к ней относится. Если подключается определенный пользователь в определенную базу, то в конфиге ищется для него соответствующее правило. Если такое правило присутствует, то применяются ассоциированные с ним настройки пула. Если подключается пользователь, для которого нет отдельного правила, то он подпадает под правило "default", для которого также можно установить определенные настройки пула, либо authentification "block" , который заблокирует доступ для такого пользователя.
 
+```yaml
 database "test" {
     user "test" {
         storage "postgres_server"
@@ -282,16 +305,18 @@ database "test" {
         authentication "block"
     }
 }
+```
 
 Здесь можно выставлять лимиты для определенных пользователей, включать или отключать cancel, rollback, настраивать тип пулинга, тип аутентификации, сертификаты. 
 Также по аналогии с user, можно описать правило подключения к database "default", которое будет действовать при подключении пользователей к не описанной в конфигурационном файле БД. В данном примере, такие пользователи будут заблокированы:
 
+```yaml
 database "default" {
     user "default" {
         authentication "block"
     }
 }
-
+```
 
 
 
@@ -300,8 +325,8 @@ database "default" {
 
 В тестах участвуют 2 хоста:
 
-vmbps-sbp-db (5 CPU, 35 RAM)
-vmbps-sbp-db (12 CPU, 63 RAM)
+host1 (5 CPU, 35 RAM)
+host2 (12 CPU, 63 RAM)
 
 ## Тест 1 - Влияние увеличения коннектов к БД без пулера на производительность
 
