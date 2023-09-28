@@ -38,7 +38,7 @@ PgBouncer
 
 ### Установка odyssey
 
-- Скачивается из репозитория https://github.com/yandex/odyssey
+- скачивается из репозитория https://github.com/yandex/odyssey
 - для компиляции нужен cmake либо gcc/clang
 - зависимость только openssl
 - для запуска нужен файл конфигурации ./odyssey <config file>
@@ -49,7 +49,7 @@ PgBouncer
  
 Odyssey на данный момент можно установить только собрав из исходных кодов с git. Собрав пулер, также необходимо создать необходимые для работы каталоги, linux пользователя, конфигурационный файл и файл лога с соответствующими разрешениями. После чего настроить запуск сервиса и внести изменения в конфигурационный файл.
 
-
+```bash
 zypper install git cmake gcc postgresql15-server-devel
 git clone https://github.com/yandex/odyssey.git
 cd odyssey/
@@ -71,13 +71,13 @@ chown root:root /usr/bin/odyssey
 cp -p odyssey.conf /etc/odyssey/odyssey.conf
 chmod 644 /etc/odyssey/odyssey.conf
 cp scripts/systemd/odyssey.service /usr/lib/systemd/systemsystemctl daemon-reload
-
+```
 В случае, если odyssey работает в кластере patroni, то для корректной работы необходимо отредактировать юнит файл так, чтобы odyssey всегда запускался с запуском кластера.
 
 Настройка запуска сервиса:
 Для корректной работы Odyssey совместно с Patroni необходимо настроить запуск сервиса.
 
-
+```bash
 systemctl edit odyssey.service
 ----------------------------
 ### Editing /etc/systemd/system/odyssey.service.d/override.conf
@@ -102,7 +102,7 @@ PartOf=patroni.service
 # [Install]
 # WantedBy=multi-user.target
 ---------------------------------
-
+```bash
 nano /etc/systemd/system/patroni.service
 ----------------------------------
 [Unit]
@@ -122,18 +122,176 @@ Restart=no
 WantedBy=multi-user.target
 -------------------------------------
 systemctl daemon-reload
+```
+## Настройка Odyssey
+### Общие настройки:
+
+<details>
+
+  <summary>пример конфигурационного файла odyssey.conf</summary>
+
+daemonize no
+pid_file "/var/run/odyssey/odyssey.pid"
+unix_socket_dir "/var/run/postgresql"
+unix_socket_mode "0644"
+locks_dir "/var/run/odyssey"
+graceful_die_on_errors no
+enable_online_restart no
+bindwith_reuseport no
+log_file "/var/log/odyssey.log"
+log_format "%p %t %l [%i %s] (%c) %m\n"
+log_to_stdout yes
+log_syslog no
+log_syslog_ident "odyssey"
+log_syslog_facility "daemon"
+log_debug no
+log_config no
+log_session no
+log_query no
+log_stats no
+stats_interval 60
+log_general_stats_prom no
+log_route_stats_prom no
+workers 1
+resolvers 1
+readahead 8192
+cache_coroutine 0
+coroutine_stack_size 8
+nodelay yes
+keepalive 15
+keepalive_keep_interval 75
+keepalive_probes 9
+keepalive_usr_timeout 0
+listen {
+        host "*"
+        port 6432
+        backlog 128
+    compression no
+}
+storage "postgres_server" {
+        type "remote"
+        host "10.1.69.170"
+        port 5432
+}
+database "postgres" {
+        user default {
+                authentication "none"
+                storage "postgres_server"
+                pool "session"
+                pool_size 10
+        client_max 100
+                pool_discard no
+                pool_cancel yes
+                pool_rollback yes
+                client_fwd_error yes
+                application_name_add_host yes
+                log_debug no
+        }
+        user "postgres" {
+                authentication "none"
+                storage "postgres_server"
+                pool "session"
+                pool_size 20
+                client_max 50
+                pool_discard no
+                pool_cancel yes
+                pool_rollback yes
+                client_fwd_error yes
+                application_name_add_host yes
+                log_query no
+        }
+}
+database "pgbench" {
+        user default {
+                authentication "none"
+                storage "postgres_server"
+                pool "transaction"
+                pool_size 80
+                client_max 1800
+                pool_discard no
+                pool_cancel yes
+                pool_rollback yes
+                client_fwd_error yes
+                application_name_add_host yes
+                log_debug no
+        }
+        user "pgbench" {
+                authentication "scram-sha-256"
+                password "<password>"
+                storage "postgres_server"
+                pool "session"
+                pool_size 80
+                client_max 1800
+                pool_discard no
+                pool_cancel yes
+                pool_rollback yes
+                client_fwd_error yes
+                application_name_add_host yes
+        log_query no
+        }
+}
+storage "local" {
+        type "local"
+}
+database "console" {
+        user default {
+                authentication "none"
+                pool "session"
+                storage "local"
+        }
+}
+
+</details>
+
+client_fwd_error off      failed to connect to remote server
+client_fwd_error on       database "test" doesn't exist
+
+
+### Настройка маршрутов:
+
+Сторэджи бывают только двух типов
+1. remote - бд постгреса
+2. local - для доступа к консоли odyssey,  откуда также можно получить статистику по работе пулера
+
+Storage "postgres server" {
+    type "remote"
+    host "127.0.0.1"
+    port "5432"
+    tls "disable"
+}
+
+
+Настройка пулов осуществляется на основе правил - определяется бд и пользователь, который к ней относится. Если подключается определенный пользователь в определенную базу, то в конфиге ищется для него соответствующее правило. Если такое правило присутствует, то применяются ассоциированные с ним настройки пула. Если подключается пользователь, для которого нет отдельного правила, то он подпадает под правило "default", для которого также можно установить определенные настройки пула, либо authentification "block" , который заблокирует доступ для такого пользователя.
+
+database "test" {
+    user "test" {
+        storage "postgres_server"
+        authentication "none"
+        client_max 100
+        pool "transaction"
+        pool_size 10
+        pool_cancel yes
+        pool_rollback yes
+    }
+    user "default" {
+        authentication "block"
+    }
+}
+
+Здесь можно выставлять лимиты для определенных пользователей, включать или отключать cancel, rollback, настраивать тип пулинга, тип аутентификации, сертификаты. 
+Также по аналогии с user, можно описать правило подключения к database "default", которое будет действовать при подключении пользователей к не описанной в конфигурационном файле БД. В данном примере, такие пользователи будут заблокированы:
+
+database "default" {
+    user "default" {
+        authentication "block"
+    }
+}
 
 
 
 
 
-
-
-
-
-
-
-Тест производительности БД с пулером и без
+##Тест производительности БД с пулером и без
 
 В тестах участвуют 2 хоста:
 
@@ -228,49 +386,3 @@ vmbps-sbp-db (12 CPU, 63 RAM)
 ## Вывод:
 
 #### Значительное увеличении коннектов негативно влияет на производительность. При увеличении клиентов со 100 до 1000 производительность падает до 2 раз.
-
-
-client_fwd_error off      failed to connect to remote server
-client_fwd_error on       database "test" doesn't exist
-
-
-Настройка маршрутов:
-
-Сторэджи бывают только двух типов. 
-1. remote - бд постгреса
-2. local - для доступа к консоли odyssey,  откуда также можно получить статистику по работе пулера
-
-Storage "postgres server" {
-    type "remote"
-    host "127.0.0.1"
-    port "5432"
-    tls "disable"
-}
-
-
-Настройка пулов осуществляется на основе правил - определяем бд и пользователя, который к ней относится. Если приходит определенный пользователь в определенную базу, то в конфиге ищется для него соответствующее правило, если это правило присутствует, то применяются ассоциированные с ним настройки пула. Если приходит пользователь, для которого нет отдельного правила, то он подпадает под правило "default", которое тоже имеет определенные настройки пула, либо authentification "block" , который заблокирует доступ для такого пользователя.
-
-database "test" {
-    user "test" {
-        storage "postgres_server"
-        authentication "none"
-        client_max 100
-        pool "transaction"
-        pool_size 10
-        pool_cancel yes
-        pool_rollback yes
-    }
-    user "default" {
-        authentication "block"
-    }
-}
-
-Здесь можно выставлять лимиты для определенных пользователей, включать или отключать cancel, rollback, настраивать тип пулинга, тип аутентификации, сертификаты. 
-Также для database, по аналогии с user, можно выставить значение default, тогда пользователи которые захотят подключиться к не описанной в конфиге базе, например, будут заблокированы.
-
-database "default" {
-    user "default" {
-        authentication "block"
-    }
-}
-
