@@ -136,113 +136,113 @@ systemctl daemon-reload
 daemonize no \
 pid_file "/var/run/odyssey/odyssey.pid" \
 unix_socket_dir "/var/run/postgresql" \
-unix_socket_mode "0644"
-locks_dir "/var/run/odyssey"
-graceful_die_on_errors no
-enable_online_restart no
-bindwith_reuseport no
-log_file "/var/log/odyssey.log"
-log_format "%p %t %l [%i %s] (%c) %m\n"
-log_to_stdout yes
-log_syslog no
-log_syslog_ident "odyssey"
-log_syslog_facility "daemon"
-log_debug no
-log_config no
-log_session no
-log_query no
-log_stats no
-stats_interval 60
-log_general_stats_prom no
-log_route_stats_prom no
-workers 1
-resolvers 1
-readahead 8192
-cache_coroutine 0
-coroutine_stack_size 8
-nodelay yes
-keepalive 15
-keepalive_keep_interval 75
-keepalive_probes 9
-keepalive_usr_timeout 0
-listen {
-        host "*"
-        port 6432
-        backlog 128
-    compression no
-}
-storage "postgres_server" {
-        type "remote"
-        host "10.1.69.170"
-        port 5432
-}
-database "postgres" {
-        user default {
-                authentication "none"
-                storage "postgres_server"
-                pool "session"
-                pool_size 10
-        client_max 100
-                pool_discard no
-                pool_cancel yes
-                pool_rollback yes
-                client_fwd_error yes
-                application_name_add_host yes
-                log_debug no
-        }
-        user "postgres" {
-                authentication "none"
-                storage "postgres_server"
-                pool "session"
-                pool_size 20
-                client_max 50
-                pool_discard no
-                pool_cancel yes
-                pool_rollback yes
-                client_fwd_error yes
-                application_name_add_host yes
-                log_query no
-        }
-}
-database "pgbench" {
-        user default {
-                authentication "none"
-                storage "postgres_server"
-                pool "transaction"
-                pool_size 80
-                client_max 1800
-                pool_discard no
-                pool_cancel yes
-                pool_rollback yes
-                client_fwd_error yes
-                application_name_add_host yes
-                log_debug no
-        }
-        user "pgbench" {
-                authentication "scram-sha-256"
-                password "<password>"
-                storage "postgres_server"
-                pool "session"
-                pool_size 80
-                client_max 1800
-                pool_discard no
-                pool_cancel yes
-                pool_rollback yes
-                client_fwd_error yes
-                application_name_add_host yes
-        log_query no
-        }
-}
-storage "local" {
-        type "local"
-}
-database "console" {
-        user default {
-                authentication "none"
-                pool "session"
-                storage "local"
-        }
-}
+unix_socket_mode "0644" \
+locks_dir "/var/run/odyssey" \
+graceful_die_on_errors no \
+enable_online_restart no \
+bindwith_reuseport no \
+log_file "/var/log/odyssey.log" \
+log_format "%p %t %l [%i %s] (%c) %m\n" \
+log_to_stdout yes \
+log_syslog no \
+log_syslog_ident "odyssey" \
+log_syslog_facility "daemon" \
+log_debug no \
+log_config no \
+log_session no \
+log_query no \
+log_stats no \
+stats_interval 60 \
+log_general_stats_prom no \
+log_route_stats_prom no \
+workers 1 \
+resolvers 1 \
+readahead 8192 \
+cache_coroutine 0 \
+coroutine_stack_size 8 \
+nodelay yes \
+keepalive 15 \
+keepalive_keep_interval 75 \
+keepalive_probes 9 \
+keepalive_usr_timeout 0 \
+listen { \
+        host "*" \
+        port 6432 \
+        backlog 128 \
+    compression no \
+} \
+storage "postgres_server" { \
+        type "remote" \
+        host "10.1.69.170" \
+        port 5432 \
+} \
+database "postgres" { \
+        user default { \
+                authentication "none" \
+                storage "postgres_server" \
+                pool "session" \
+                pool_size 10 \
+        client_max 100 \
+                pool_discard no \
+                pool_cancel yes \
+                pool_rollback yes \
+                client_fwd_error yes \
+                application_name_add_host yes \
+                log_debug no \
+        } \
+        user "postgres" { \
+                authentication "none" \
+                storage "postgres_server" \
+                pool "session" \
+                pool_size 20 \
+                client_max 50 \
+                pool_discard no \
+                pool_cancel yes \
+                pool_rollback yes \
+                client_fwd_error yes \
+                application_name_add_host yes \
+                log_query no \
+        } \
+} \
+database "pgbench" { \
+        user default { \
+                authentication "none" \
+                storage "postgres_server" \
+                pool "transaction" \
+                pool_size 80 \
+                client_max 1800 \
+                pool_discard no \
+                pool_cancel yes \
+                pool_rollback yes \
+                client_fwd_error yes \
+                application_name_add_host yes \
+                log_debug no \
+        } \
+        user "pgbench" { \
+                authentication "scram-sha-256" \
+                password "<password>" \
+                storage "postgres_server" \
+                pool "session" \
+                pool_size 80 \
+                client_max 1800 \
+                pool_discard no \
+                pool_cancel yes \
+                pool_rollback yes \
+                client_fwd_error yes \
+                application_name_add_host yes \
+        log_query no \
+        } \
+} \
+storage "local" { \
+        type "local" \
+} \
+database "console" { \
+        user default { \
+                authentication "none" \
+                pool "session" \
+                storage "local" \
+        } \
+} \
 
 </details>
 
