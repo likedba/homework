@@ -72,6 +72,7 @@ cp -p odyssey.conf /etc/odyssey/odyssey.conf
 chmod 644 /etc/odyssey/odyssey.conf
 cp scripts/systemd/odyssey.service /usr/lib/systemd/systemsystemctl daemon-reload
 ```
+
 В случае, если odyssey работает в кластере patroni, то для корректной работы необходимо отредактировать юнит файл так, чтобы odyssey всегда запускался с запуском кластера.
 
 Настройка запуска сервиса:
@@ -102,6 +103,8 @@ PartOf=patroni.service
 # [Install]
 # WantedBy=multi-user.target
 ---------------------------------
+```
+
 ```bash
 nano /etc/systemd/system/patroni.service
 ----------------------------------
@@ -130,9 +133,9 @@ systemctl daemon-reload
 
   <summary>пример конфигурационного файла odyssey.conf</summary>
 
-daemonize no
-pid_file "/var/run/odyssey/odyssey.pid"
-unix_socket_dir "/var/run/postgresql"
+daemonize no \
+pid_file "/var/run/odyssey/odyssey.pid" \
+unix_socket_dir "/var/run/postgresql" \
 unix_socket_mode "0644"
 locks_dir "/var/run/odyssey"
 graceful_die_on_errors no
