@@ -73,7 +73,7 @@ cp scripts/systemd/odyssey.service /usr/lib/systemd/systemsystemctl daemon-reloa
 
 <details>
 
-  <summary>systemctl edit odyssey.service</summary>
+  <summary>odyssey.service</summary>
 
 ```bash
 ### Editing /etc/systemd/system/odyssey.service.d/override.conf
