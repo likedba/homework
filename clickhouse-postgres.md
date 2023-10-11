@@ -31,9 +31,9 @@ wal_level = logical
 create database test;
 \c test
 ```
-сгенерим таблицу 10гб:
+сгенерим таблицу 10гб: \
 
-`postgres=# create table key as select s, md5(random()::text) from generate_Series(1,160000000) s;`
+`postgres=# create table key as select s, md5(random()::text) from generate_Series(1,160000000) s;` \
 
 ![результат теста](/images/table.png)
 
@@ -44,8 +44,8 @@ pg_size_pretty
 ----------------
  10 GB
 ```
-Хост clickhouse:
-Установим клик как рекомендует дока:
+Хост clickhouse: \
+Установим клик как рекомендует дока: \
 ```bash
 sudo apt-get install -y apt-transport-https ca-certificates dirmngr
 sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 8919F6BD2B48D754
@@ -60,8 +60,8 @@ sudo service clickhouse-server start
 
 clickhouse-client
 ```
-Создадим связанную с таблицей key в постгрес таблицу в clickhouse. На данном этапе она физически не находится на хосте клика, а только по запросу получает данные по протоколу репликации.
-`clickhouse.us-central1-a.c.quixotic-moment-397713.internal :) CREATE table default.pg_test (s Int32, md5 String) ENGINE = PostgreSQL('10.128.0.19:5432', 'test', 'key', 'postgres', 'aleksei', 'public');`
+Создадим связанную с таблицей key в постгрес таблицу в clickhouse. На данном этапе она физически не находится на хосте клика, а только по запросу получает данные по протоколу репликации. \
+`clickhouse.us-central1-a.c.quixotic-moment-397713.internal :) CREATE table default.pg_test (s Int32, md5 String) ENGINE = PostgreSQL('10.128.0.19:5432', 'test', 'key', 'postgres', 'aleksei', 'public');` \
 
 Теперь перенесем таблицу test непосредственно на хост клика, для этого создадим таблицу с движком mergetree на основе исходной в постгресе
 ```bash
@@ -79,51 +79,67 @@ Ok.
 
 0 rows in set. Elapsed: 333.781 sec. Processed 160.00 million rows, 7.20 GB (479.36 thousand rows/s., 21.57 MB/s.)
 Peak memory usage: 88.46 MiB.
-
+```
 
 ## Проверим быстродействие баз
 ### Postgresql
-
+```bash
 Psql 
 \c test
 test=# \timing on
 Timing is on.
+```
 1.
+```bash
 test=# select * from key where md5 like '1234%';
 Time: 43332.726 ms (00:43.333)
-
+```
 2.
+```bash
 test=# select * from key where md5 = '123457ac4ca571e651d51bf7eda83a5c';
 Time: 43451.686 ms (00:43.452)
+```
 
 3.
+```bash
 select * from key where s between 57548718 and 57548735;
 Time: 43394.269 ms (00:43.394)
+```
 
 4.
+```bash
 test=# select * from key where s in (57548718,159423532,134);
 Time: 43372.473 ms (00:43.372)
+```
 
-5. 
+5.
+```bash
 Создадим индекс 
 test=# CREATE UNIQUE INDEX s_idx ON key (s);
 test=# select * from key where s in (57548718,159423532,134);
 Time: 17.460 ms
+```
 
 6.
+```bash
 test=# select * from key where s in (57548718,159423532,134) and md5 like '1234%';
 (2 rows)
 Time: 2.834 ms
+```
 
 7.
+```bash
 test=# select * from key where s between 54000000 and 55000000 and md5 like '1234%';
 (15 rows)
 Time: 778.170 ms
+```
 
 8.
+```bash
 test=# select * from key order by 1 limit 10;
 (1 row)
 Time: 43145.207 ms (00:43.145)
+```
 
 ### Clickhouse
 
