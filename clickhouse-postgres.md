@@ -60,7 +60,7 @@ sudo service clickhouse-server start
 
 clickhouse-client
 ```
-Создадим связанную с таблицей key в постгрес таблицу в clickhouse. На данном этапе она физически не находится на хосте клика, а только по запросу получает данные по протоколу репликации. \
+Создадим связанную с таблицей key в постгрес таблицу в clickhouse. На данном этапе она физически не находится на хосте клика, а только по запросу получает данные по протоколу репликации.
 `clickhouse.us-central1-a.c.quixotic-moment-397713.internal :) CREATE table default.pg_test (s Int32, md5 String) ENGINE = PostgreSQL('10.128.0.19:5432', 'test', 'key', 'postgres', 'aleksei', 'public');` \
 
 Теперь перенесем таблицу test непосредственно на хост клика, для этого создадим таблицу с движком mergetree на основе исходной в постгресе
