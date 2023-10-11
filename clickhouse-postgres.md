@@ -23,9 +23,9 @@ listen_addresses = ‘*’
 wal_level = logical
 ```
 
-`psql`
-зададим пароль для роли postgres
-`alter user postgres with password 'aleksei';`
+`psql` \
+зададим пароль для роли postgres \
+`alter user postgres with password 'aleksei';` \
 создадим бд test
 ```bash
 create database test;
