@@ -5,7 +5,7 @@ gcloud beta compute --project=quixotic-moment-397713 instances create postgres -
 gcloud beta compute --project=quixotic-moment-397713 instances create clickhouse --zone=us-central1-a --machine-type=e2-small --subnet=default --network-tier=PREMIUM --maintenance-policy=MIGRATE --service-account=812144456828-compute@developer.gserviceaccount.com --scopes=https://www.googleapis.com/auth/devstorage.read_only,https://www.googleapis.com/auth/logging.write,https://www.googleapis.com/auth/monitoring.write,https://www.googleapis.com/auth/servicecontrol,https://www.googleapis.com/auth/service.management.readonly,https://www.googleapis.com/auth/trace.append --image-family=ubuntu-2004-lts --image-project=ubuntu-os-cloud --boot-disk-size=100GB --boot-disk-type=pd-ssd --boot-disk-device-name=postgres --no-shielded-secure-boot --shielded-vtpm --shielded-integrity-monitoring --reservation-affinity=any
 ```
 
-### __Хост postgres:__ \
+### __Хост postgres:__ 
 Установим постгрес \
 `sudo apt update && sudo DEBIAN_FRONTEND=noninteractive apt upgrade -y && sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list' && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add - && sudo apt-get update && sudo DEBIAN_FRONTEND=noninteractive apt -y install postgresql-15`
 
@@ -31,9 +31,9 @@ wal_level = logical
 create database test;
 \c test
 ```
-сгенерим таблицу 10гб: \
+сгенерим таблицу 10гб: 
 
-`postgres=# create table key as select s, md5(random()::text) from generate_Series(1,160000000) s;` \
+`postgres=# create table key as select s, md5(random()::text) from generate_Series(1,160000000) s;` 
 
 ![результат теста](/images/table.png)
 
@@ -44,8 +44,8 @@ pg_size_pretty
 ----------------
  10 GB
 ```
-Хост clickhouse: \
-Установим клик как рекомендует дока: \
+## Хост clickhouse: 
+Установим клик как рекомендует дока: 
 ```bash
 sudo apt-get install -y apt-transport-https ca-certificates dirmngr
 sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 8919F6BD2B48D754
@@ -113,9 +113,9 @@ Time: 43372.473 ms (00:43.372)
 ```
 
 5.
+Создадим индекс \
+`test=# CREATE UNIQUE INDEX s_idx ON key (s);`
 ```bash
-Создадим индекс 
-test=# CREATE UNIQUE INDEX s_idx ON key (s);
 test=# select * from key where s in (57548718,159423532,134);
 Time: 17.460 ms
 ```
@@ -204,12 +204,12 @@ clickhouse.us-central1-a.c.quixotic-moment-397713.internal :) select count(s) fr
 1 row in set. Elapsed: 0.013 sec.
 ```
 
-## Сравнение производительности PostgreSQL и Odyssey
+## Сравнение производительности PostgreSQL и Clickhouse
 
 | № Теста | Запрос | Индекс Postgres | Индекс Clickhouse | Postgres, сек | Clickhouse, сек |
 | :------: | :------: | :------: | :------: | :------: | :------: |
 | 1 | select * from default.test where md5 like '1234%'; | - | - | 43,333 | 22,171 |
-| 2 | select * from default.test where md5 = '123457ac4ca571e651d51bf7eda83a5c'; | 43,452 | 21,006 |
+| 2 | select * from default.test where md5 = '123457ac4ca571e651d51bf7eda83a5c'; | - | - | 43,452 | 21,006 |
 | 3 | select * from default.test where s between 57548718 and 57548735; | - | - | 43,394 | 0,024 |
 | 4 | select * from default.test where s in (57548718,159423532,134); | - | - | 43,372 | 0,015 |
 | 5 | select * from default.test where s in (57548718,159423532,134); | + | + | 0,017 | 0,005 |
