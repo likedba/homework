@@ -31,9 +31,11 @@ wal_level = logical
 create database test;
 \c test
 ```
-сгенерим базу 10гб:
+сгенерим таблицу 10гб:
 
 `postgres=# create table key as select s, md5(random()::text) from generate_Series(1,160000000) s;`
+
+![результат теста](/images/table.png)
 
 Проверим размер:
 ```bash
@@ -155,9 +157,9 @@ clickhouse.us-central1-a.c.quixotic-moment-397713.internal :) select * from defa
 Peak memory usage: 27.65 KiB.
 ```
 
-5. 
+5.
 
-### Создадим индекс 
+### Создадим индекс
 
 `CREATE UNIQUE INDEX s_idx ON default.test (s);`
 ```bash
@@ -185,7 +187,8 @@ Peak memory usage: 103.27 KiB.
 clickhouse.us-central1-a.c.quixotic-moment-397713.internal :) select count(s) from default.test;
 1 row in set. Elapsed: 0.013 sec.
 ```
-Сравнение производительности PostgreSQL и Odyssey
+
+## Сравнение производительности PostgreSQL и Odyssey
 
 | № Теста | Запрос | Индекс Postgres | Индекс Clickhouse | Postgres, сек | Clickhouse, сек |
 | :------: | :------: | :------: | :------: | :------: | :------: |
