@@ -215,4 +215,4 @@ clickhouse.us-central1-a.c.quixotic-moment-397713.internal :) select count(s) fr
 | 5 | select * from default.test where s in (57548718,159423532,134); | + | + | 0,017 | 0,005 |
 | 6 | select * from default.test where s in (57548718,159423532,134) and md5 like '1234%'; | + | + | 0,003 | 0,009 |
 | 7 | select * from default.test where s between 54000000 and 55000000 and md5 like '1234%'; | + | + | 0,778 | 0,140 |
-| 8 | select * from key order by 1 limit 10; | + | + | 43,145 | 0,013 |
+| 8 | select count(s) from key; | + | + | 43,145 | 0,013 |
