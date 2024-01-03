@@ -41,7 +41,14 @@ pg_lsclusters
 PGPASSWORD=alehan psql -h 5.188.141.108 -p 5432 -U postgres -d postgres
 PGPASSWORD=alehan psql -h 185.241.192.28 -p 5432 -U postgres -d postgres
 
-9. Установим pg_probackup на postgres-1
+9. Создадим БД alehan, добавим таблицу test с данными
+sudo su postgres
+psql
+CREATE DATABASE alehan;
+CREATE TABLE test(i int);"
+INSERT INTO test VALUES (10), (20), (30);
+
+10. Установим pg_probackup на postgres-1
 
 sudo apt install gpg wget
 wget -qO - https://repo.postgrespro.ru/pg_probackup/keys/GPG-KEY-PG-PROBACKUP | sudo tee /etc/apt/trusted.gpg.d/pg_probackup.asc
@@ -52,10 +59,10 @@ sudo apt update
 apt search pg_probackup
 sudo apt install pg-probackup-15
 
-10. Поставим доп пакеты
+11. Поставим доп пакеты
 sudo DEBIAN_FRONTEND=noninteractive apt install pg-probackup-15 pg-probackup-15-dbg postgresql-contrib postgresql-15-pg-checksums -y
 
-11. Создаем каталог и устанавливаем переменную окружения BACKUP_PATH
+12. Создаем каталог и устанавливаем переменную окружения BACKUP_PATH
 sudo rm -rf /home/backups && sudo mkdir /home/backups && sudo chmod 777 /home/backups
 sudo su postgres
 echo "BACKUP_PATH=/home/backups/">>~/.bashrc
@@ -65,7 +72,7 @@ cd $HOME
 postgres@postgres-1:~$ echo $BACKUP_PATH
 /home/backups/
 
-12. Создадим роль в PostgreSQL для выполнения бекапов и дадим ему соответствующие права
+13. Создадим роль backup в PostgreSQL для выполнения бекапов и дадим ей соответствующие права
 Для каждой БД:
 sudo su postgres 
 psql
@@ -96,7 +103,7 @@ nano /etc/postgresql/15/main/pg_hba.conf
 host    all             backup          localhost               scram-sha-256
 psql -c "select pg_reload_conf()"
 
-18. Включим контрольные суммы
+14. Включим контрольные суммы
 sudo systemctl stop postgresql@15-main
 postgres@postgres-1:/home/ubuntu$ /usr/lib/postgresql/15/bin/pg_checksums -D /var/lib/postgresql/15/main --enable
 Checksum operation completed
@@ -110,7 +117,7 @@ Checksums enabled in cluster
 
 sudo systemctl start postgresql@15-main
 
-13. Инициализируем бэкап
+15. Инициализируем бэкап
 pg_probackup-15 init
 INFO: Backup catalog '/home/backups' successfully initialized
 
@@ -125,13 +132,13 @@ drwx------ 2 postgres postgres 4096 Jan  2 18:12 wal
 pg_probackup-15 add-instance --instance 'main' -D /var/lib/postgresql/15/main
 INFO: Instance 'main' successfully initialized
 
-15. Создадим новую БД
+16. Создадим новую БД
 sudo su postgres
 psql
 CREATE DATABASE alehan;"
 CREATE DATABASE
 
-16. Создадим таблицу test в БД alehan
+17. Создадим таблицу test в БД alehan
 postgres=# \c alehan
 psql (16.1 (Ubuntu 16.1-1.pgdg22.04+1), server 15.5 (Ubuntu 15.5-1.pgdg22.04+1))
 You are now connected to database "alehan" as user "postgres".
@@ -146,7 +153,7 @@ alehan=# SELECT * FROM test;
  30
 (3 rows)
 
-17. Создадим резервную копию кластера. Параллельно с созданием РК пустим нагрузку с другого хоста для имитации реальных условий.
+18. Создадим резервную копию кластера. Параллельно с созданием РК пустим нагрузку с другого хоста для имитации реальных условий.
 ubuntu@postgres-2:~$ pgbench -h 185.241.192.28 -p 5432 -U postgres -c 50 -j 2 -P 60 -T 600 benchmark
 
 postgres@postgres-1:/home/ubuntu$ pg_probackup-15 backup --instance 'main' -b FULL --stream --temp-slot -h localhost -U backup -p 5432
@@ -182,7 +189,7 @@ BACKUP INSTANCE 'main'
 
 
 
-18. Настроим ssh (т.к. через него производится restore на удаленный хост)
+19. Настроим ssh (т.к. через него производится restore на удаленный хост)
 
 - создать ключи для пользователя postgres на обоих хостах
   ssh-keygen -t rsa
@@ -201,13 +208,13 @@ BACKUP INSTANCE 'main'
   ssh postgres@185.241.192.28
 
 
-19. На postgres-2 остановим кластер
+20. На postgres-2 остановим кластер
 sudo systemctl stop postgresql@15-main.service
 Удалим данные кластера
 sudo su postgres
 rm -rf /var/lib/postgresql/15/main/*
 
-20. На postgres-1 восстановим РК на postgres-2
+21. На postgres-1 восстановим РК на postgres-2
 pg_probackup-15 restore --instance 'main' -D /var/lib/postgresql/15/main --remote-host=5.188.141.108 --remote-proto=ssh
 
 INFO: Validating backup S6OZHQ
@@ -222,7 +229,7 @@ INFO: Syncing restored files to disk
 INFO: Restored backup files are synced, time elapsed: 1s
 INFO: Restore of backup S6OZHQ completed.
 
-21. Запустим кластер на postgres-2
+22. Запустим кластер на postgres-2
 sudo systemctl start postgresql@15-main.service
 проверим состояние кластера после запуска
 sudo systemctl status postgresql@15-main.service
@@ -253,7 +260,7 @@ Jan 03 20:47:17 postgres-2 postgresql@15-main[118724]: 2024-01-03 20:46:41.074 U
 
 Кластер успешно запустился.
 
-22. Теперь проверим БД
+23. Теперь проверим БД
 sudo su postgres
 psql
 \du
