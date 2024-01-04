@@ -193,11 +193,13 @@ BACKUP INSTANCE 'main'
 
 - создать ключи для пользователя postgres на обоих хостах
   ssh-keygen -t rsa
-- отредактировать конфиг ssh для того, чтобы скопировать ключи
-  nano /etc/ssh/sshd_config
+- отредактировать конфиг ssh для того, чтобы скопировать ключи (из под суперпользователя)
+  sudo nano /etc/ssh/sshd_config
   PasswordAuthentication yes
   PubkeyAuthentication yes
   После копирования ключа на другой хост можно отключить PasswordAuthentication
+- перезапустить службу sshd (ssh)
+  sudo systemctl resatrt sshd.service
 - Создать пароль пользователя postgres
   sudo passwd postgres
 - Копировать публичный ключ на другой хост
