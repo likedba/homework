@@ -1,3 +1,4 @@
+```bash
 MINICUBE
 
 1. Создадим виртуалку
@@ -49,9 +50,7 @@ ubuntu@postgres1:~$ minikube kubectl -- proxy --accept-hosts='*' --address='0.0.
 [1] 57788
 ubuntu@postgres1:~$ W1006 13:56:36.097285   57796 proxy.go:175] Request filter disabled, your proxy is vulnerable to XSRF attacks, please be cautious
 Starting to serve on [::]:8001
-после этого открывается json с ресурсами апи:
-
-![Minikube api](screen_kubectl_proxy_api.png)
+после этого открывается json с ресурсами апи
 
 6. Забираем с виртуалки конфиг кластера, для использования сертификатов, копируем на локальный комп папочку ~/.minikube 
 
@@ -102,3 +101,4 @@ Forwarding from 0.0.0.0:8432 -> 5432
 11. пробуем подкюллчиться извне
 
 подключение происходит успешно
+```
